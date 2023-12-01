@@ -1,7 +1,12 @@
-Term Project Report
+## Term Project Report
+<br>
 이찬영 (2019098068, 미디어테크놀로지전공)
 
-본 프로젝트는 입력된 이미지를 dog, cat, horse 등의 10가지 동물 유형으로 분류하는 신경망을 학습시켜서 일반적인 상황에서 최고의 성능을 내게 하는 프로젝트입니다. 원래 있는 skeleton code에 hyper parameter tuning, data augmentation 등의 기능을 추가하여 모델의 성능을 끌어 올리는 것이 최종 목표입니다. 본 프로젝트는 한양대학교 ERICA 컴퓨터학부 3학년 2학기 딥러닝 (정우환 교수님) 수업의 일환으로 수행되었습니다.
+본 프로젝트는 입력된 이미지를 dog, cat, horse 등의 10가지 동물 유형으로 분류하는 신경망을 학습시켜서 일반적인 상황에서 최고의 성능을 내게 하는 프로젝트입니다. 
+<br>
+원래 있는 skeleton code에 hyper parameter tuning, data augmentation 등의 기능을 추가하여 모델의 성능을 끌어 올리는 것이 최종 목표입니다. 
+<br>
+본 프로젝트는 한양대학교 ERICA 컴퓨터학부 3학년 2학기 딥러닝 (정우환 교수님) 수업의 일환으로 수행되었습니다.
 
 <br>
 
