@@ -26,7 +26,7 @@ Resnet18 모델을 적용해 보았으며, 처음에는 epoch과 weight를 바�
 
 <br>
 
-**(2) resnet50**
+**(2) Resnet50**
 
 ![](https://velog.velcdn.com/images/lcy1221/post/c24b7a44-cf50-45ce-928b-ae88afc3f26f/image.png)
 
