@@ -10,6 +10,7 @@ from tqdm import tqdm
 import torch.nn as nn
 from torchvision import models
 import math
+import random
 
 # Configure device
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -29,6 +30,12 @@ class CustomDataset(Dataset):
         train_data, test_data = train_test_split(self.images, test_size=0.3, random_state=42)
         val_data, test_data = train_test_split(test_data, test_size=0.5, random_state=42)
 
+        # 각 age에 대한 데이터 개수 파악
+        age_counts = {}
+        for filename in self.images:
+            age = int(filename.split('_')[0])
+            age_counts[age] = age_counts.get(age, 0) + 1
+
         # total : 24101
         if split == 'train':
             self.images = train_data    # 16871
@@ -37,20 +44,29 @@ class CustomDataset(Dataset):
         elif split == 'test':
             self.images = test_data   # 3616
 
+        # 각 age에 대한 데이터 개수의 역수를 계산하여 확률로 사용
+        total_data = len(self.images)
+        self.probabilities = [1 / age_counts[int(filename.split('_')[0])] for filename in self.images]
+        self.probabilities = [prob / sum(self.probabilities) for prob in self.probabilities]
+
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, idx):
         labels = []
+
+        # 확률에 따라 데이터 샘플링
+        selected_index = random.choices(range(len(self.images)), weights=self.probabilities)[0]
+
         # Read images
-        img_path = os.path.join(self.root, self.images[idx])
+        img_path = os.path.join(self.root, self.images[selected_index])
 
         img = cv2.imread(img_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         images = self.transform(img)
 
         # Extract labels from the filename
-        parts = self.images[idx].split('_')
+        parts = self.images[selected_index].split('_')
         age, gender, race, _ = parts
         age = int(age)
         gender = int(gender)
@@ -77,11 +93,12 @@ for x, y in train_loader:
     print(y.shape)    # label
     break
 
+
 class RegressionNN(nn.Module):
     def __init__(self, dropout_rate=0.5):
         super(RegressionNN, self).__init__()
         # Use a pre-trained ResNet18 as a feature extractor
-        self.resnet = models.resnet50(pretrained=True)
+        self.resnet = models.resnet152(pretrained=True)
 
         # Modify the last fully connected layer for regression (1 output neuron for age prediction)
         # Add dropout to the fully connected layer
@@ -98,7 +115,7 @@ regression_model = RegressionNN(dropout_rate=0.5).to(DEVICE)
 # Loss function for regression (Mean Squared Error) 회
 age_loss = nn.MSELoss()
 # Optimizer
-optimizer = torch.optim.Adam(regression_model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(regression_model.parameters(), lr=0.0001)
 
 def evaluate(model, test_loader):
     # Evaluation loop for regression
@@ -118,18 +135,18 @@ def evaluate(model, test_loader):
             # Forward pass
             predictions = regression_model(X)
 
-            age_acc += (predictions.round() == age_labels).sum().item()
+            # age_acc += (predictions.round() == age_labels).sum().item()
 
             mae = nn.L1Loss()(predictions, age_labels)
             total_mae += mae.item()
 
-    age_acc = age_acc / len(test_loader)
-    print(f"Age accuracy: {age_acc*100}%")
+    # age_acc = age_acc / len(test_loader)
+    # print(f"Age accuracy: {age_acc*100}%")
 
     return total_mae, total_mae / len(test_loader)
 
 # Training loop for regression
-num_epochs = 40  # You can adjust the number of epochs
+num_epochs = 20  # You can adjust the number of epochs
 for epoch in range(num_epochs):
     loop = tqdm(enumerate(train_loader), total=len(train_loader), leave=True)    # 진행 상황을 시각적으로 표시하는 라이브러리
     total_loss = 0.0
